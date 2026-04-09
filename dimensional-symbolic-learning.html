@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>量纲同步计算的符号学习模型 - 材料基础工程数据库</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="material-design-tool.css">
+    <script src="auth.js"></script>
+    <style>
+        .dimensional-page {
+            padding: 40px 0 80px;
+            background: var(--bg-secondary);
+        }
+
+        .dimensional-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .dimensional-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+        }
+
+        .dimensional-header .subtitle {
+            font-size: 1.125rem;
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .dimensional-header p {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .model-diagram {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .model-diagram img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        .model-diagram-caption {
+            margin-top: 16px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        .content-section {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 40px;
+        }
+
+        .content-section h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--bg-tertiary);
+        }
+
+        .content-section p {
+            font-size: 1rem;
+            line-height: 1.8;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+        }
+
+        .content-section p:last-child {
+            margin-bottom: 0;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%);
+            border-left: 4px solid var(--primary-color);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .highlight-box p {
+            margin: 0;
+            color: var(--text-primary);
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-top: 24px;
+        }
+
+        .feature-card {
+            padding: 24px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            border-top: 4px solid var(--primary-color);
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .feature-card h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .feature-card h3::before {
+            content: "✓";
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            font-size: 0.875rem;
+        }
+
+        .feature-card p {
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .diagram-explanation {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-top: 24px;
+        }
+
+        .diagram-part {
+            padding: 24px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .diagram-part .part-label {
+            display: inline-block;
+            padding: 4px 12px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .diagram-part h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .diagram-part p {
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 24px;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .comparison-table th {
+            background: var(--bg-tertiary);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .comparison-table td {
+            color: var(--text-secondary);
+        }
+
+        .comparison-table tr:hover {
+            background: var(--bg-secondary);
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--text-primary);
+            margin-bottom: 24px;
+        }
+
+        .back-button:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .back-button svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .tech-highlight {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%);
+            border-radius: 8px;
+            margin: 16px 0;
+        }
+
+        .tech-highlight .icon {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .tech-highlight .content h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .tech-highlight .content p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .dimensional-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .model-diagram,
+            .content-section {
+                padding: 20px;
+            }
+
+            .feature-grid,
+            .diagram-explanation {
+                grid-template-columns: 1fr;
+            }
+
+            .comparison-table {
+                font-size: 0.875rem;
+            }
+
+            .comparison-table th,
+            .comparison-table td {
+                padding: 12px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <div class="logo-icon">
+                    <img src="d5931adfe245e8e50dcbc61d9d072e36.png" alt="Logo" class="logo-image">
+                </div>
+                <span class="brand-text">材料基础工程数据库</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html">首页</a></li>
+                <li><a href="categories.html">材料分类</a></li>
+                <li><a href="statistics.html">数据查询</a></li>
+                <li><a href="calculation-engine.html">高通量第一性原理计算引擎</a></li>
+                <li><a href="model-data-package.html">高通量模型数据包</a></li>
+                <li><a href="material-design-tool.html" class="active">材料设计工具</a></li>
+                <li><a href="model-framework.html">模型构建</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button class="btn-login">登录</button>
+                <button class="btn-register">注册</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="dimensional-page">
+        <div class="container">
+            <!-- 返回按钮 -->
+            <button class="back-button" onclick="window.location.href='material-design-tool.html'">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                返回工具首页
+            </button>
+
+            <!-- 页面标题 -->
+            <div class="dimensional-header">
+                <h1>量纲同步计算的符号学习模型</h1>
+                <div class="subtitle">Dimension-synchronous-computation symbolic learning</div>
+                <p>通过符号学习得到表达式模型，具有单位计算和向量计算的双重功能</p>
+            </div>
+
+            <!-- 模型图示 -->
+            <div class="model-diagram">
+                <img src="15c7bcfa0c2678c9342f1a4ea8736c72.png" alt="模型图示">
+                <div class="model-diagram-caption">模型图示</div>
+            </div>
+
+            <!-- 模型简介 -->
+            <div class="content-section">
+                <h2>模型简介</h2>
+                <p>量纲同步计算（Dimension-synchronous-computation symbolic learning）的符号学习模型是在传统的符号学习的基础上，通过加入单位计算功能模块，并改进了底层的遗传编程（Genetic Programming, GP）为基因向量编程（Gene Vector Programming, GVP），使符号学习具有了单位计算和向量计算的双重功能。</p>
+                
+                <div class="tech-highlight">
+                    <div class="icon">GP</div>
+                    <div class="content">
+                        <h4>遗传编程 (GP)</h4>
+                        <p>传统的符号学习方法，用于生成数学表达式</p>
+                    </div>
+                </div>
+                
+                <div class="tech-highlight">
+                    <div class="icon">GVP</div>
+                    <div class="content">
+                        <h4>基因向量编程 (GVP)</h4>
+                        <p>改进的底层算法，支持向量计算功能</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 工作流程 -->
+            <div class="content-section">
+                <h2>工作流程</h2>
+                <div class="diagram-explanation">
+                    <div class="diagram-part">
+                        <span class="part-label">图 a</span>
+                        <h3>数据预处理与输入</h3>
+                        <p>数据通过预处理之后，可直接输入到DSC符号学习中。预处理步骤包括数据清洗、归一化、特征提取等，确保输入数据的质量和一致性。</p>
+                    </div>
+                    
+                    <div class="diagram-part">
+                        <span class="part-label">图 b</span>
+                        <h3>符号学习与遗传算法优化</h3>
+                        <p>符号学习产生表达式通过遗传算法优化，最终得到表达式。评价的方式是通过单位与适应度双重评判，确保生成的表达式既符合物理意义又具有良好的拟合效果。</p>
+                    </div>
+                    
+                    <div class="diagram-part">
+                        <span class="part-label">图 c</span>
+                        <h3>单位计算</h3>
+                        <p>单位计算模块确保生成的表达式具有正确的物理量纲，避免出现量纲不一致的错误表达式，提高模型的物理可解释性。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 核心特性 -->
+            <div class="content-section">
+                <h2>核心特性</h2>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h3>单位计算功能</h3>
+                        <p>内置单位计算模块，自动验证和保持表达式的量纲一致性，确保生成的模型具有物理意义。</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3>向量计算能力</h3>
+                        <p>通过GVP改进底层算法，支持向量运算，能够处理多维数据和复杂表达式。</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3>双重评判机制</h3>
+                        <p>采用单位与适应度双重评判标准，既保证物理正确性，又确保模型精度。</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3>遗传算法优化</h3>
+                        <p>利用遗传算法的全局搜索能力，从大量可能的表达式中找到最优解。</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3>符号表达式输出</h3>
+                        <p>直接输出可解释的数学表达式，而非黑盒模型，便于理解和应用。</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3>物理可解释性</h3>
+                        <p>生成的表达式符合物理规律和量纲要求，具有明确的物理意义。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 技术对比 -->
+            <div class="content-section">
+                <h2>技术对比</h2>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>特性</th>
+                            <th>传统符号学习</th>
+                            <th>DSC符号学习</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>底层算法</td>
+                            <td>遗传编程 (GP)</td>
+                            <td>基因向量编程 (GVP)</td>
+                        </tr>
+                        <tr>
+                            <td>单位计算</td>
+                            <td>不支持</td>
+                            <td>支持</td>
+                        </tr>
+                        <tr>
+                            <td>向量计算</td>
+                            <td>不支持</td>
+                            <td>支持</td>
+                        </tr>
+                        <tr>
+                            <td>量纲验证</td>
+                            <td>无</td>
+                            <td>自动验证</td>
+                        </tr>
+                        <tr>
+                            <td>评判标准</td>
+                            <td>适应度单一评判</td>
+                            <td>单位与适应度双重评判</td>
+                        </tr>
+                        <tr>
+                            <td>物理可解释性</td>
+                            <td>一般</td>
+                            <td>强</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 应用场景 -->
+            <div class="content-section">
+                <h2>应用场景</h2>
+                <div class="highlight-box">
+                    <p><strong>材料科学领域：</strong>适用于需要建立物理可解释模型的材料性能预测问题，如力学性能、热学性能、电学性能等的建模。</p>
+                </div>
+                <p>该模型特别适合以下场景：</p>
+                <ul>
+                    <li>需要明确物理意义的材料性能建模</li>
+                    <li>涉及复杂量纲关系的物理问题</li>
+                    <li>需要可解释性强的预测模型</li>
+                    <li>多维数据的符号回归分析</li>
+                    <li>材料设计中的经验公式发现</li>
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2024 材料基础工程数据库. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

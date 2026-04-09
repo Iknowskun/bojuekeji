@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>材料设计工具 - 材料基础工程数据库</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="material-design-tool.css">
+    <script src="auth.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/loaders/GLTFLoader.js"></script>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <div class="logo-icon">
+                    <img src="d5931adfe245e8e50dcbc61d9d072e36.png" alt="Logo" class="logo-image">
+                </div>
+                <span class="brand-text">材料基础工程数据库</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html">首页</a></li>
+                <li><a href="categories.html">材料分类</a></li>
+                <li><a href="statistics.html">数据查询</a></li>
+                <li><a href="calculation-engine.html">高通量第一性原理计算引擎</a></li>
+                <li><a href="model-data-package.html">高通量模型数据包</a></li>
+                <li><a href="material-design-tool.html" class="active">材料设计工具</a></li>
+                <li><a href="model-framework.html">模型构建</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button class="btn-login">登录</button>
+                <button class="btn-register">注册</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="design-tool-main">
+        <div class="container">
+            <!-- 首页视图 -->
+            <div id="homeView" class="home-view">
+                <!-- 顶部背景 -->
+                <div class="header-bg"></div>
+
+                <!-- 卡片容器 -->
+                <div class="card-container">
+                    <!-- 卡片1：模型温度可视化 -->
+                    <div class="card" onclick="showTool('temperature')">
+                        <div class="icon-circle">
+                            <svg class="icon-svg" viewBox="0 0 100 100">
+                                <!-- 温度计 -->
+                                <rect x="45" y="20" width="10" height="50" rx="5" />
+                                <circle cx="50" cy="75" r="12" />
+                                <!-- 刻度线 -->
+                                <line x1="55" y1="25" x2="60" y2="25" />
+                                <line x1="55" y1="35" x2="60" y2="35" />
+                                <line x1="55" y1="45" x2="60" y2="45" />
+                                <line x1="55" y1="55" x2="60" y2="55" />
+                                <!-- 温度箭头 -->
+                                <path d="M65,30 L75,25 L75,35 Z" fill="#666" />
+                                <line x1="65" y1="30" x2="75" y2="30" />
+                                <!-- 热量符号 -->
+                                <path d="M30,40 Q35,35 40,40 Q45,45 50,40" />
+                                <path d="M35,45 Q40,40 45,45 Q50,50 55,45" />
+                                <path d="M40,50 Q45,45 50,50 Q55,55 60,50" />
+                            </svg>
+                        </div>
+                        <div class="card-text">模型温度可视化</div>
+                    </div>
+
+                    <!-- 卡片2：面向性能要求的自适应迭代快速材料设计策略 -->
+                    <div class="card" onclick="showTool('adaptive')">
+                        <div class="icon-circle">
+                            <svg class="icon-svg" viewBox="0 0 100 100">
+                                <!-- 云朵 -->
+                                <path d="M20,60 C20,50 30,40 45,40 C60,40 70,50 70,60 C75,60 80,65 80,70 C80,75 75,80 70,80 C65,80 60,75 55,75 C50,75 45,80 40,80 C30,80 20,70 20,60 Z" />
+                                <!-- 齿轮 -->
+                                <circle cx="45" cy="45" r="10" />
+                                <path d="M45,35 L45,55 M35,45 L55,45" />
+                                <circle cx="45" cy="45" r="3" />
+                                <!-- 箭头 -->
+                                <path d="M30,80 L45,90 L60,80" />
+                                <line x1="20" y1="80" x2="30" y2="80" />
+                                <line x1="60" y1="80" x2="70" y2="80" />
+                                <!-- 圆点 -->
+                                <circle cx="35" cy="65" r="3" fill="#666" />
+                                <circle cx="42" cy="65" r="3" fill="#666" />
+                                <circle cx="49" cy="65" r="3" fill="#666" />
+                            </svg>
+                        </div>
+                        <div class="card-text">面向性能要求的自适应迭代快速材料设计策略</div>
+                    </div>
+
+                    <!-- 卡片3：基于遗传算法的对材料描述符和机器学习模型组合筛选框架 -->
+                    <div class="card" onclick="showTool('genetic')">
+                        <div class="icon-circle">
+                            <svg class="icon-svg" viewBox="0 0 100 100">
+                                <!-- 表格 -->
+                                <rect x="20" y="30" width="60" height="40" />
+                                <line x1="20" y1="40" x2="80" y2="40" />
+                                <line x1="20" y1="50" x2="80" y2="50" />
+                                <line x1="20" y1="60" x2="80" y2="60" />
+                                <line x1="40" y1="30" x2="40" y2="70" />
+                                <line x1="60" y1="30" x2="60" y2="70" />
+                                <!-- 表头 -->
+                                <rect x="25" y="20" width="30" height="8" />
+                                <rect x="28" y="22" width="4" height="4" fill="#666" />
+                                <rect x="33" y="22" width="4" height="4" fill="#666" />
+                                <rect x="38" y="22" width="4" height="4" fill="#666" />
+                                <rect x="43" y="22" width="4" height="4" fill="#666" />
+                                <rect x="48" y="22" width="4" height="4" fill="#666" />
+                                <!-- 卷轴 -->
+                                <path d="M70,30 C75,30 80,35 80,40 C80,45 75,50 70,50" />
+                                <!-- 底部刻度 -->
+                                <path d="M25,75 L30,75 L30,80 L35,80 L35,75 L40,75 L40,80 L45,80 L45,75 L50,75 L50,80 L55,80 L55,75 L60,75 L60,80 L65,80 L65,75 L70,75" />
+                            </svg>
+                        </div>
+                        <div class="card-text">基于遗传算法的对材料描述符和机器学习模型组合筛选框架</div>
+                    </div>
+
+                    <!-- 卡片4：量纲同步计算的符号学习模型 -->
+                    <div class="card" onclick="showTool('dimensional')">
+                        <div class="icon-circle">
+                            <svg class="icon-svg" viewBox="0 0 100 100">
+                                <!-- 顶部三个圆 -->
+                                <circle cx="40" cy="40" r="8" fill="#666" />
+                                <circle cx="60" cy="40" r="8" fill="#666" />
+                                <circle cx="50" cy="30" r="8" fill="#666" />
+                                <!-- 连接线 -->
+                                <line x1="40" y1="40" x2="40" y2="50" />
+                                <line x1="60" y1="40" x2="60" y2="50" />
+                                <line x1="50" y1="30" x2="50" y2="50" />
+                                <!-- 中间模块 -->
+                                <rect x="40" y="50" width="20" height="10" />
+                                <circle cx="45" cy="55" r="2" fill="#666" />
+                                <circle cx="50" cy="55" r="2" fill="#666" />
+                                <circle cx="55" cy="55" r="2" fill="#666" />
+                                <!-- 底部模块 -->
+                                <line x1="35" y1="50" x2="35" y2="60" />
+                                <rect x="30" y="60" width="10" height="10" />
+                                <line x1="50" y1="60" x2="50" y2="70" />
+                                <rect x="45" y="70" width="10" height="10" />
+                                <line x1="65" y1="50" x2="65" y2="60" />
+                                <rect x="60" y="60" width="10" height="10" />
+                            </svg>
+                        </div>
+                        <div class="card-text">量纲同步计算的符号学习模型</div>
+                    </div>
+
+                    <!-- 卡片5：基于机器学习的钢过冷奥氏体动态转变TTT曲线预测模型 -->
+                    <div class="card" onclick="showTool('ttt')">
+                        <div class="icon-circle">
+                            <svg class="icon-svg" viewBox="0 0 100 100">
+                                <!-- 三个服务器 -->
+                                <rect x="30" y="30" width="12" height="35" />
+                                <circle cx="36" cy="38" r="2" fill="#666" />
+                                <line x1="30" y1="65" x2="42" y2="65" />
+                                <line x1="36" y1="65" x2="36" y2="75" />
+                                <rect x="45" y="25" width="12" height="40" />
+                                <circle cx="51" cy="33" r="2" fill="#666" />
+                                <line x1="45" y1="65" x2="57" y2="65" />
+                                <line x1="51" y1="65" x2="51" y2="75" />
+                                <rect x="60" y="30" width="12" height="35" />
+                                <circle cx="66" cy="38" r="2" fill="#666" />
+                                <line x1="60" y1="65" x2="72" y2="65" />
+                                <line x1="66" y1="65" x2="66" y2="75" />
+                                <!-- 底部蓝色条 -->
+                                <line x1="30" y1="78" x2="72" y2="78" stroke="#007bff" stroke-width="3" />
+                            </svg>
+                        </div>
+                        <div class="card-text">基于机器学习的钢过冷奥氏体动态转变TTT曲线预测模型</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 工具视图 -->
+            <div id="toolView" class="tool-view" style="display: none;">
+                <!-- 返回首页按钮 -->
+                <div class="back-to-home">
+                    <button class="btn-back" onclick="showHome()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 12H5M12 19l-7-7 7-7"/>
+                        </svg>
+                        返回首页
+                    </button>
+                </div>
+
+                <!-- 页面标题 -->
+                <div class="page-header">
+                    <h1>材料设计工具</h1>
+                    <p>金属材料模型上传与温度场可视化</p>
+                </div>
+
+                <!-- 工具布局 -->
+                <div class="tool-layout">
+                <!-- 左侧配置区 -->
+                <div class="left-panel">
+                    <div class="panel-section">
+                        <h3>模型上传</h3>
+                        <div class="upload-area" id="uploadArea">
+                            <div class="upload-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="17 8 12 3 7 8"/>
+                                    <line x1="12" y1="3" x2="12" y2="15"/>
+                                </svg>
+                            </div>
+                            <p>拖拽金属材料模型（GLB/GLTF）到此处</p>
+                            <p>或点击上传</p>
+                            <span class="upload-hint">支持 .glb, .gltf 格式</span>
+                            <input type="file" id="modelFile" accept=".glb,.gltf" style="display: none;">
+                        </div>
+
+                        <div class="test-model-section">
+                            <p class="test-model-desc">没有模型文件？使用测试模型快速体验功能</p>
+                            <div class="test-model-buttons">
+                                <button class="btn-test-model" onclick="loadTestModel('cube')">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                                    </svg>
+                                    立方体
+                                </button>
+                                <button class="btn-test-model" onclick="loadTestModel('sphere')">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"/>
+                                    </svg>
+                                    球体
+                                </button>
+                                <button class="btn-test-model" onclick="loadTestModel('cylinder')">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 2L12 22"/>
+                                        <path d="M12 2C7.58 2 4 3.34 4 5V19C4 20.66 7.58 22 12 22C16.42 22 20 20.66 20 19V5C20 3.34 16.42 2 12 2Z"/>
+                                    </svg>
+                                    圆柱体
+                                </button>
+                                <button class="btn-test-model" onclick="loadTestModel('torus')">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <circle cx="12" cy="12" r="6"/>
+                                    </svg>
+                                    圆环
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="file-info" id="fileInfo" style="display: none;">
+                            <div class="file-details">
+                                <div class="file-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                        <polyline points="14 2 14 8 20 8"/>
+                                    </svg>
+                                </div>
+                                <div class="file-text">
+                                    <div class="file-name" id="fileName"></div>
+                                    <div class="file-meta" id="fileMeta"></div>
+                                </div>
+                            </div>
+                            <button class="btn-remove-file" onclick="removeModel()">×</button>
+                        </div>
+                    </div>
+
+                    <div class="panel-section">
+                        <h3>温度刻度（℃）</h3>
+                        <p class="section-desc">滑动选择温度更新模型颜色</p>
+                        
+                        <div class="temp-slider-container">
+                            <div class="temp-slider-wrapper">
+                                <div class="temp-gradient-bar"></div>
+                                <input type="range" id="tempSlider" class="temp-slider" min="515" max="670" value="590" step="1">
+                                <div class="temp-slider-thumb" id="tempSliderThumb"></div>
+                            </div>
+                            <div class="temp-labels">
+                                <span class="temp-label">515℃</span>
+                                <span class="temp-label">550℃</span>
+                                <span class="temp-label">590℃</span>
+                                <span class="temp-label">630℃</span>
+                                <span class="temp-label">670℃</span>
+                            </div>
+                        </div>
+
+                        <div class="current-temp">
+                            <span class="current-label">当前温度：</span>
+                            <span class="current-value" id="currentTemp">590</span>
+                            <span class="current-unit">℃</span>
+                        </div>
+                    </div>
+
+                    <div class="panel-section">
+                        <h3>控制选项</h3>
+                        <div class="control-options">
+                            <label class="control-label">
+                                <input type="checkbox" id="autoRotate" checked>
+                                <span>自动旋转</span>
+                            </label>
+                            <label class="control-label">
+                                <input type="checkbox" id="showWireframe">
+                                <span>显示线框</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧3D渲染区 -->
+                <div class="right-panel">
+                    <div class="panel-header">
+                        <h3>3D模型预览</h3>
+                        <div class="view-controls">
+                            <button class="view-btn" onclick="resetView()" title="重置视图">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                                    <path d="M3 3v5h5"/>
+                                </svg>
+                            </button>
+                            <button class="view-btn" onclick="toggleFullscreen()" title="全屏">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="model-container" id="modelContainer">
+                        <div class="empty-state">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                                <line x1="12" y1="22.08" x2="12" y2="12"/>
+                            </svg>
+                            <p>请上传3D模型文件</p>
+                            <p class="empty-hint">支持 GLB/GLTF 格式</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 底部日志区 -->
+            <div class="log-section">
+                <div class="log-header">
+                    <h3>操作日志</h3>
+                    <button class="btn-clear-log" onclick="clearLog()">清空日志</button>
+                </div>
+                <div class="log-content" id="logContent">
+                    <div class="log-entry info">
+                        <span class="log-time">--:--:--</span>
+                        <span class="log-message">系统初始化完成，等待模型上传...</span>
+                    </div>
+                </div>
+            </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2024 材料基础工程数据库. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="material-design-tool.js"></script>
+</body>
+</html>
