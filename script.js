@@ -224,7 +224,182 @@ if (window.innerWidth <= 768) {
 
 console.log('材料基础工程数据库 - 首页已加载');
 
-// ==================== 首页登录注册功能 ====================
+// ==================== 登录注册（全站 localStorage，内置演示账号） ====================
+
+const BUILTIN_USERNAME = 'bojuekeji';
+const BUILTIN_PASSWORD = 'bojuekeji';
+const BUILTIN_USER = {
+    id: 'builtin-bojuekeji',
+    username: BUILTIN_USERNAME,
+    email: 'bojuekeji@system.local',
+    password: BUILTIN_PASSWORD,
+    phone: '',
+    createdAt: new Date().toISOString(),
+    isBuiltin: true
+};
+
+function getProtectedPages() {
+    return [
+        'categories.html', 'statistics.html', 'calculation-engine.html',
+        'model-data-package.html', 'material-design-tool.html', 'model-framework.html',
+        'adaptive-design.html', 'genetic-algorithm-framework.html',
+        'dimensional-symbolic-learning.html', 'ttt-curve-prediction.html'
+    ];
+}
+
+function ensureDefaultUser() {
+    let users = [];
+    try {
+        users = JSON.parse(localStorage.getItem('users') || '[]');
+        if (!Array.isArray(users)) users = [];
+    } catch (e) {
+        users = [];
+    }
+    const idx = users.findIndex(u => u && u.username === BUILTIN_USERNAME);
+    if (idx === -1) {
+        users.push({ ...BUILTIN_USER });
+    } else {
+        users[idx] = {
+            ...users[idx],
+            username: BUILTIN_USERNAME,
+            password: BUILTIN_PASSWORD,
+            email: BUILTIN_USER.email,
+            isBuiltin: true
+        };
+    }
+    localStorage.setItem('users', JSON.stringify(users));
+}
+
+function ensureToast() {
+    if (!document.getElementById('toast')) {
+        const el = document.createElement('div');
+        el.id = 'toast';
+        el.className = 'toast';
+        document.body.appendChild(el);
+    }
+}
+
+function getInjectedAuthModalsHtml() {
+    return `
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>登录</h2>
+                <button type="button" class="modal-close" onclick="closeModal('loginModal')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="loginForm" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label for="loginId">用户名或邮箱</label>
+                        <input type="text" id="loginId" name="loginId" required autocomplete="username" placeholder="用户名或邮箱">
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">密码</label>
+                        <div class="password-input">
+                            <input type="password" id="loginPassword" name="password" required autocomplete="current-password" placeholder="请输入密码">
+                            <button type="button" class="toggle-password" onclick="togglePassword('loginPassword')">
+                                <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                <svg class="eye-closed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                                    <line x1="1" y1="1" x2="23" y2="23"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-options">
+                        <label class="checkbox-label"><input type="checkbox" name="remember"><span>记住我</span></label>
+                        <a href="#" class="forgot-password" onclick="event.preventDefault()">忘记密码？</a>
+                    </div>
+                    <button type="submit" class="btn-submit">登录</button>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <p>还没有账号？<a href="#" onclick="event.preventDefault(); switchModal('loginModal', 'registerModal')">立即注册</a></p>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="registerModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>注册</h2>
+                <button type="button" class="modal-close" onclick="closeModal('registerModal')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="registerForm" onsubmit="handleRegister(event)">
+                    <div class="form-group">
+                        <label for="registerUsername">用户名</label>
+                        <input type="text" id="registerUsername" name="username" required placeholder="请输入用户名" minlength="3" autocomplete="username">
+                    </div>
+                    <div class="form-group">
+                        <label for="registerEmail">邮箱</label>
+                        <input type="email" id="registerEmail" name="email" required placeholder="请输入邮箱" autocomplete="email">
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPassword">密码</label>
+                        <div class="password-input">
+                            <input type="password" id="registerPassword" name="password" required placeholder="请输入密码（至少6位）" minlength="6" autocomplete="new-password">
+                            <button type="button" class="toggle-password" onclick="togglePassword('registerPassword')">
+                                <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                <svg class="eye-closed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                                    <line x1="1" y1="1" x2="23" y2="23"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="password-strength">
+                            <div class="strength-bar"><div class="strength-fill" id="passwordStrength"></div></div>
+                            <span class="strength-text" id="strengthText">密码强度</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerConfirmPassword">确认密码</label>
+                        <input type="password" id="registerConfirmPassword" name="confirmPassword" required placeholder="请再次输入密码" autocomplete="new-password">
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPhone">手机号（选填）</label>
+                        <input type="tel" id="registerPhone" name="phone" placeholder="请输入手机号" autocomplete="tel">
+                    </div>
+                    <div class="form-options">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="agree" required>
+                            <span>我已阅读并同意 <a href="#" class="link" onclick="event.preventDefault()">用户协议</a> 和 <a href="#" class="link" onclick="event.preventDefault()">隐私政策</a></span>
+                        </label>
+                    </div>
+                    <button type="submit" class="btn-submit">注册</button>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <p>已有账号？<a href="#" onclick="event.preventDefault(); switchModal('registerModal', 'loginModal')">立即登录</a></p>
+            </div>
+        </div>
+    </div>`;
+}
+
+function ensureAuthModals() {
+    if (document.getElementById('loginModal')) return;
+    document.body.insertAdjacentHTML('beforeend', getInjectedAuthModalsHtml());
+    bindAuthModalOverlays();
+}
+
+function bindAuthModalOverlays() {
+    document.querySelectorAll('#loginModal.modal-overlay, #registerModal.modal-overlay').forEach(modal => {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal(modal.id);
+        });
+    });
+}
 
 // 全局用户状态变量
 let currentUser = null;
@@ -260,14 +435,8 @@ function switchModal(closeId, openId) {
     }, 300);
 }
 
-// 点击模态框外部关闭
-document.querySelectorAll('.modal-overlay').forEach(modal => {
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            closeModal(modal.id);
-        }
-    });
-});
+// 登录/注册弹窗外点击关闭（页面已有静态弹窗时绑定）
+bindAuthModalOverlays();
 
 // ESC键关闭模态框
 document.addEventListener('keydown', (e) => {
@@ -311,28 +480,29 @@ function checkPasswordStrength(password) {
     return 'strong';
 }
 
-// 监听密码输入
-document.getElementById('registerPassword')?.addEventListener('input', function() {
-    const password = this.value;
-    const strengthFill = document.getElementById('passwordStrength');
-    const strengthText = document.getElementById('strengthText');
+function setupRegisterPasswordStrength() {
+    const input = document.getElementById('registerPassword');
+    if (!input || input.dataset.strengthBound === '1') return;
+    input.dataset.strengthBound = '1';
+    input.addEventListener('input', function() {
+        const password = this.value;
+        const strengthFill = document.getElementById('passwordStrength');
+        const strengthText = document.getElementById('strengthText');
+        if (!strengthFill || !strengthText) return;
 
-    if (password.length === 0) {
-        strengthFill.className = 'strength-fill';
-        strengthText.textContent = '密码强度';
-        return;
-    }
+        if (password.length === 0) {
+            strengthFill.className = 'strength-fill';
+            strengthText.textContent = '密码强度';
+            return;
+        }
 
-    const strength = checkPasswordStrength(password);
-    strengthFill.className = `strength-fill ${strength}`;
+        const strength = checkPasswordStrength(password);
+        strengthFill.className = `strength-fill ${strength}`;
 
-    const strengthLabels = {
-        weak: '弱',
-        medium: '中',
-        strong: '强'
-    };
-    strengthText.textContent = `密码强度: ${strengthLabels[strength]}`;
-});
+        const strengthLabels = { weak: '弱', medium: '中', strong: '强' };
+        strengthText.textContent = `密码强度: ${strengthLabels[strength]}`;
+    });
+}
 
 // 显示Toast提示
 function showToast(message, type = 'info') {
@@ -345,19 +515,33 @@ function showToast(message, type = 'info') {
     }, 3000);
 }
 
+function getLoginIdentifier(form) {
+    const v = form.loginId?.value ?? form.email?.value ?? form.username?.value ?? '';
+    return String(v).trim();
+}
+
 // 处理登录
 function handleLogin(event) {
     event.preventDefault();
 
     const form = event.target;
-    const email = form.email.value;
+    const loginId = getLoginIdentifier(form);
     const password = form.password.value;
 
-    // 从localStorage获取用户数据
-    const users = JSON.parse(localStorage.getItem('users')) || [];
-    
-    // 查找用户
-    const user = users.find(u => u.email === email && u.password === password);
+    ensureDefaultUser();
+
+    let users = [];
+    try {
+        users = JSON.parse(localStorage.getItem('users') || '[]');
+        if (!Array.isArray(users)) users = [];
+    } catch (e) {
+        users = [];
+    }
+
+    const user = users.find(u =>
+        u && u.password === password &&
+        (u.username === loginId || u.email === loginId)
+    );
 
     if (user) {
         currentUser = user;
@@ -366,9 +550,9 @@ function handleLogin(event) {
         closeModal('loginModal');
         updateNavAfterLogin();
     } else {
-        showToast('邮箱或密码错误', 'error');
+        showToast('用户名/邮箱或密码错误', 'error');
     }
-    return false; // 强制阻止表单提交
+    return false;
 }
 
 // 处理注册
@@ -376,14 +560,30 @@ function handleRegister(event) {
     event.preventDefault();
 
     const form = event.target;
-    const username = form.username.value;
-    const email = form.email.value;
+    const username = (form.username.value || '').trim();
+    const email = (form.email.value || '').trim();
     const password = form.password.value;
     const confirmPassword = form.confirmPassword.value;
-    const phone = form.phone.value;
+    const phone = (form.phone?.value || '').trim();
 
-    // 从localStorage获取用户数据
-    const users = JSON.parse(localStorage.getItem('users')) || [];
+    ensureDefaultUser();
+
+    let users = [];
+    try {
+        users = JSON.parse(localStorage.getItem('users') || '[]');
+        if (!Array.isArray(users)) users = [];
+    } catch (e) {
+        users = [];
+    }
+
+    if (username.toLowerCase() === BUILTIN_USERNAME) {
+        showToast('该用户名为系统预留账号，请更换用户名', 'error');
+        return false;
+    }
+    if (email.toLowerCase() === BUILTIN_USER.email.toLowerCase()) {
+        showToast('该邮箱为系统预留，请更换邮箱', 'error');
+        return false;
+    }
 
     // 验证密码
     if (password !== confirmPassword) {
@@ -419,7 +619,7 @@ function handleRegister(event) {
     showToast('注册成功！请登录', 'success');
     closeModal('registerModal');
     openModal('loginModal');
-    return false; // 强制阻止表单提交
+    return false;
 }
 
 // 登录后更新导航栏
@@ -617,8 +817,9 @@ function handleLogout() {
     localStorage.removeItem('currentUser');
     showToast('已退出登录', 'info');
     
-    // 恢复导航栏
     const navActions = document.querySelector('.nav-actions');
+    if (!navActions) return;
+
     navActions.innerHTML = `
         <button class="btn-login">登录</button>
         <button class="btn-register">注册</button>
@@ -715,9 +916,24 @@ function setupProtectedLinks() {
 
 // 页面加载时检查登录状态
 document.addEventListener('DOMContentLoaded', () => {
-    // 从localStorage获取当前用户
-    currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
-    
+    ensureDefaultUser();
+    ensureToast();
+    ensureAuthModals();
+    setupRegisterPasswordStrength();
+
+    currentUser = null;
+    try {
+        currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+    } catch (e) {
+        currentUser = null;
+    }
+
+    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    if (getProtectedPages().includes(currentPage) && !currentUser) {
+        showToast('请先登录', 'warning');
+        openModal('loginModal');
+    }
+
     if (currentUser) {
         updateNavAfterLogin();
     }
