@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>基于遗传算法的对材料描述符和机器学习模型组合筛选框架 - 材料基础工程数据库</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="material-design-tool.css">
+    <style>
+        .genetic-page {
+            padding: 40px 0 80px;
+            background: var(--bg-secondary);
+        }
+
+        .genetic-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .genetic-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+        }
+
+        .genetic-header .subtitle {
+            font-size: 1.125rem;
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .genetic-header p {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .model-diagram {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .model-diagram img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        .model-diagram-caption {
+            margin-top: 16px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        .content-section {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 40px;
+        }
+
+        .content-section h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--bg-tertiary);
+        }
+
+        .content-section p {
+            font-size: 1rem;
+            line-height: 1.8;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+        }
+
+        .content-section p:last-child {
+            margin-bottom: 0;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%);
+            border-left: 4px solid var(--primary-color);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .highlight-box p {
+            margin: 0;
+            color: var(--text-primary);
+        }
+
+        .problem-statement {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(249, 115, 22, 0.1) 100%);
+            border-left: 4px solid #ef4444;
+            padding: 24px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+        }
+
+        .problem-statement h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #ef4444;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .problem-statement h3::before {
+            content: "!";
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            font-size: 0.875rem;
+        }
+
+        .problem-statement p {
+            margin: 0;
+            color: var(--text-primary);
+            line-height: 1.8;
+        }
+
+        .framework-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .framework-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 24px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .framework-step:hover {
+            transform: translateX(8px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .step-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--gradient-primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .step-content h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .step-content p {
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .step-content ul {
+            margin: 12px 0 0;
+            padding-left: 20px;
+        }
+
+        .step-content li {
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+
+        .step-content li:last-child {
+            margin-bottom: 0;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--text-primary);
+            margin-bottom: 24px;
+        }
+
+        .back-button:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .back-button svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .info-card {
+            padding: 20px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            border-top: 4px solid var(--primary-color);
+        }
+
+        .info-card h4 {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .info-card p {
+            font-size: 1.125rem;
+            color: var(--text-primary);
+            font-weight: 600;
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .genetic-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .model-diagram,
+            .content-section {
+                padding: 20px;
+            }
+
+            .framework-step {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <div class="logo-icon">
+                    <img src="d5931adfe245e8e50dcbc61d9d072e36.png" alt="Logo" class="logo-image">
+                </div>
+                <span class="brand-text">材料基础工程数据库</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html">首页</a></li>
+                <li><a href="categories.html">材料分类</a></li>
+                <li><a href="statistics.html">数据查询</a></li>
+                <li><a href="calculation-engine.html">高通量第一性原理计算引擎</a></li>
+                <li><a href="model-data-package.html">高通量模型数据包</a></li>
+                <li><a href="material-design-tool.html" class="active">材料设计工具</a></li>
+                <li><a href="model-framework.html">模型构建</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button class="btn-login">登录</button>
+                <button class="btn-register">注册</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="genetic-page">
+        <div class="container">
+            <!-- 返回按钮 -->
+            <button class="back-button" onclick="window.location.href='material-design-tool.html'">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                返回工具首页
+            </button>
+
+            <!-- 页面标题 -->
+            <div class="genetic-header">
+                <h1>基于遗传算法的对材料描述符和机器学习模型组合筛选框架</h1>
+                <div class="subtitle">使用遗传算法进行特征和模型的组合筛选</div>
+                <p>从大量组合寻优空间中快速选择机器学习模型和材料描述符的普适算法</p>
+            </div>
+
+            <!-- 模型图示 -->
+            <div class="model-diagram">
+                <img src="df97fe3e76c69a25bed41692864647eb.png" alt="模型图示">
+                <div class="model-diagram-caption">模型图示</div>
+            </div>
+
+            <!-- 问题的提出 -->
+            <div class="content-section">
+                <h2>问题的提出</h2>
+                <div class="problem-statement">
+                    <h3>核心挑战</h3>
+                    <p>材料信息学利用机器学习模型来映射目标属性和各种材料描述符之间的关系以加速新材料的发现。然而，对于某一材料问题，其潜在的机器学习模型和材料描述符数量众多，特别是其组合，这在很大程度上阻碍了材料信息学的应用。</p>
+                </div>
+                <div class="highlight-box">
+                    <p><strong>举例说明：</strong>对某一材料问题，有30个可能与目标性能有关的材料描述符，5个不同的机器学习模型，组合的寻优空间就有<strong>53亿</strong>。</p>
+                </div>
+                <p>因此，对于特定的材料问题，需要一个可以快速协同筛选最适合的ML模型和材料描述符组合的方法。在本研究中，我们提出了一个利用遗传算法从大量组合寻优空间中快速选择机器学习模型和材料描述符的普适算法，并证明了它对高熵合金相形成问题的有效性。</p>
+            </div>
+
+            <!-- 框架介绍 -->
+            <div class="content-section">
+                <h2>框架介绍</h2>
+                <div class="framework-steps">
+                    <!-- 步骤1 -->
+                    <div class="framework-step">
+                        <div class="step-icon">1</div>
+                        <div class="step-content">
+                            <h3>确定材料问题</h3>
+                            <p><strong>高熵合金相分类问题</strong></p>
+                            <ul>
+                                <li><strong>分类一：</strong>固溶体合金（SS）和非固溶体合金（NSS）——二分类问题</li>
+                                <li><strong>分类二：</strong>单一体心立方（BCC）相，单一面心立方（FCC）相，以及FCC和BCC双相（DP）——三分类问题</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 步骤2 -->
+                    <div class="framework-step">
+                        <div class="step-icon">2</div>
+                        <div class="step-content">
+                            <h3>建立材料描述符空间和机器学习模型池</h3>
+                            <div class="info-grid">
+                                <div class="info-card">
+                                    <h4>材料描述符</h4>
+                                    <p>46个</p>
+                                </div>
+                                <div class="info-card">
+                                    <h4>机器学习模型</h4>
+                                    <p>9个分类器</p>
+                                </div>
+                            </div>
+                            <p>经过Pearson相关系数筛选后有46个材料描述符；对此分类问题我们共采用了九个不同的机器学习模型（分类器）。</p>
+                        </div>
+                    </div>
+
+                    <!-- 步骤3 -->
+                    <div class="framework-step">
+                        <div class="step-icon">3</div>
+                        <div class="step-content">
+                            <h3>基于遗传算法对材料描述符和机器学习模型组合筛选</h3>
+                            <p><strong>编码方式：</strong>每个材料描述符都使用1或0的整数编码，表示是否选择该描述符。因此，整个材料描述符集由0和1的二进制字符串描述。如图所示，遗传算法随机生成一定数量的材料描述符的初始子集。</p>
+                            <p><strong>适应度函数：</strong>定义为分类准确性。利用已有数据集，训练基于种群中每个个体代表的描述符子集机器学习模型，默认计算50次留出10%作为测试集得到的分类准确率的平均值为该个体的适应度值。</p>
+                            <p><strong>遗传操作：</strong>根据这些初始子集的适应度函数的值，对这些二进制数字进行选择、交叉和变异的三个遗传算法操作会生成新的材料描述符子集，作为新一代。</p>
+                            <p><strong>迭代过程：</strong>新一代将用作初始子集，并重复执行循环，直到满足循环的停止条件为止。对某一模型，给出最优特征子集。</p>
+                            <p><strong>多次运行：</strong>由于初始种群生成的随机性，可能每次GA给出的特征子集并不相同，为此，我们多次运行GA过程，并将得到的适应度值最大的特征子集作为最终选择的特征子集。</p>
+                            <div class="highlight-box">
+                                <p><strong>最终目标：</strong>这样，可以实现机器学习模型和材料描述符的组合优化。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 模型简介 -->
+            <div class="content-section">
+                <h2>模型简介</h2>
+                <p>该框架通过遗传算法的高效搜索能力，从巨大的组合空间中快速找到最优的机器学习模型和材料描述符组合。框架的核心优势在于：</p>
+                <ul>
+                    <li><strong>高效性：</strong>遗传算法能够在有限的迭代次数内找到接近最优的解</li>
+                    <li><strong>普适性：</strong>可应用于各种材料设计问题，不局限于特定类型</li>
+                    <li><strong>协同优化：</strong>同时优化特征选择和模型选择，而非分步优化</li>
+                    <li><strong>可扩展性：</strong>可轻松添加新的描述符或模型到搜索空间中</li>
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2024 材料基础工程数据库. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>

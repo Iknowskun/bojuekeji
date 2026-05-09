@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>材料分类 - 材料基础工程数据库</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="categories.css">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <div class="logo-icon">
+                    <img src="d5931adfe245e8e50dcbc61d9d072e36.png" alt="Logo" class="logo-image">
+                </div>
+                <span class="brand-text">材料基础工程数据库</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html">首页</a></li>
+                <li><a href="categories.html" class="active">材料分类</a></li>
+                <li><a href="statistics.html">数据查询</a></li>
+                <li><a href="calculation-engine.html">高通量第一性原理计算引擎</a></li>
+                <li><a href="model-data-package.html">高通量模型数据包</a></li>
+                <li><a href="material-design-tool.html">材料设计工具</a></li>
+                <li><a href="model-framework.html">模型构建</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button class="btn-login">登录</button>
+                <button class="btn-register">注册</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 页面头部 -->
+    <section class="page-header-section">
+        <div class="container">
+            <h1 class="page-title">材料分类</h1>
+            <p class="page-description">浏览各类工程材料，获取详细的性能参数和应用信息</p>
+        </div>
+    </section>
+
+    <!-- 分类导航 -->
+    <section class="category-nav-section">
+        <div class="container">
+            <div class="category-tabs" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                <button class="category-tab active" data-category="all">全部</button>
+                <button class="category-tab" data-category="special-alloy">特种合金</button>
+                <button class="category-tab" data-category="composite">复合材料</button>
+                <button class="category-tab" data-category="superconducting">超导材料</button>
+                <button class="category-tab" data-category="steel">钢铁材料</button>
+                <button class="category-tab" data-category="energy">能源材料</button>
+                <button class="category-tab" data-category="creep">蠕变性质</button>
+                <button class="category-tab" data-category="electronic">电子结构</button>
+                <button class="category-tab" data-category="elastic-h">弹性性质(含H元素)</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 搜索和筛选 -->
+    <section class="filter-section">
+        <div class="container">
+            <div class="filter-bar">
+                <div class="search-box">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    <input type="text" id="searchInput" placeholder="搜索材料名称、牌号...">
+                </div>
+                <div class="filter-options">
+                    <select class="filter-select" id="propertyFilter">
+                        <option value="">性能参数</option>
+                        <option value="tensile">抗拉强度</option>
+                        <option value="yield">屈服强度</option>
+                        <option value="elongation">延伸率</option>
+                        <option value="hardness">硬度</option>
+                    </select>
+                    <select class="filter-select" id="sortFilter">
+                        <option value="default">默认排序</option>
+                        <option value="name">名称排序</option>
+                        <option value="tensile-desc">抗拉强度降序</option>
+                        <option value="tensile-asc">抗拉强度升序</option>
+                        <option value="update-time">更新时间</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 材料列表 -->
+    <section class="materials-section">
+        <div class="container">
+            <div class="materials-grid" id="materialsGrid">
+                <!-- 材料卡片将通过JS动态生成 -->
+            </div>
+            <div class="load-more">
+                <button class="btn-load-more" id="loadMoreBtn">加载更多</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 材料详情模态框 -->
+    <div class="modal-overlay" id="materialDetailModal">
+        <div class="modal-container detail-modal">
+            <div class="modal-header">
+                <h2 id="detailTitle">材料详情</h2>
+                <button class="modal-close" onclick="closeDetailModal()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="detail-content">
+                    <div class="detail-basic">
+                        <div class="detail-image">
+                            <div class="material-icon" id="detailIcon">🔩</div>
+                        </div>
+                        <div class="detail-info">
+                            <h3 id="detailName">材料名称</h3>
+                            <p id="detailDescription">材料描述</p>
+                            <div class="detail-tags">
+                                <span class="tag" id="detailCategory">分类</span>
+                                <span class="tag" id="detailGrade">牌号</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="detail-properties">
+                        <h4>性能参数</h4>
+                        <div class="properties-grid" id="propertiesGrid">
+                            <!-- 性能参数将通过JS动态生成 -->
+                        </div>
+                    </div>
+                    <div class="detail-applications">
+                        <h4>应用领域</h4>
+                        <div class="applications-list" id="applicationsList">
+                            <!-- 应用领域将通过JS动态生成 -->
+                        </div>
+                    </div>
+                    <div class="detail-actions">
+                        <button class="btn-favorite">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                            </svg>
+                            收藏
+                        </button>
+                        <button class="btn-compare">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="20" x2="18" y2="10"/>
+                                <line x1="12" y1="20" x2="12" y2="4"/>
+                                <line x1="6" y1="20" x2="6" y2="14"/>
+                            </svg>
+                            对比
+                        </button>
+                        <button class="btn-export">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            导出
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 登录模态框 -->
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>登录</h2>
+                <button class="modal-close" onclick="closeModal('loginModal')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="loginForm" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label for="loginId">用户名或邮箱</label>
+                        <input type="text" id="loginId" name="loginId" required autocomplete="username" placeholder="用户名或邮箱">
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">密码</label>
+                        <div class="password-input">
+                            <input type="password" id="loginPassword" name="password" required placeholder="请输入密码">
+                            <button type="button" class="toggle-password" onclick="togglePassword('loginPassword')">
+                                <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                <svg class="eye-closed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                                    <line x1="1" y1="1" x2="23" y2="23"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-options">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="remember">
+                            <span>记住我</span>
+                        </label>
+                        <a href="#" class="forgot-password">忘记密码？</a>
+                    </div>
+                    <button type="submit" class="btn-submit">登录</button>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <p>还没有账号？<a href="#" onclick="switchModal('loginModal', 'registerModal')">立即注册</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 注册模态框 -->
+    <div class="modal-overlay" id="registerModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>注册</h2>
+                <button class="modal-close" onclick="closeModal('registerModal')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="registerForm" onsubmit="handleRegister(event)">
+                    <div class="form-group">
+                        <label for="registerUsername">用户名</label>
+                        <input type="text" id="registerUsername" name="username" required placeholder="请输入用户名" minlength="3">
+                    </div>
+                    <div class="form-group">
+                        <label for="registerEmail">邮箱</label>
+                        <input type="email" id="registerEmail" name="email" required placeholder="请输入邮箱">
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPassword">密码</label>
+                        <div class="password-input">
+                            <input type="password" id="registerPassword" name="password" required placeholder="请输入密码（至少6位）" minlength="6">
+                            <button type="button" class="toggle-password" onclick="togglePassword('registerPassword')">
+                                <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                <svg class="eye-closed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                                    <line x1="1" y1="1" x2="23" y2="23"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="password-strength">
+                            <div class="strength-bar">
+                                <div class="strength-fill" id="passwordStrength"></div>
+                            </div>
+                            <span class="strength-text" id="strengthText">密码强度</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerConfirmPassword">确认密码</label>
+                        <input type="password" id="registerConfirmPassword" name="confirmPassword" required placeholder="请再次输入密码">
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPhone">手机号（选填）</label>
+                        <input type="tel" id="registerPhone" name="phone" placeholder="请输入手机号">
+                    </div>
+                    <div class="form-options">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="agree" required>
+                            <span>我已阅读并同意 <a href="#" class="link">用户协议</a> 和 <a href="#" class="link">隐私政策</a></span>
+                        </label>
+                    </div>
+                    <button type="submit" class="btn-submit">注册</button>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <p>已有账号？<a href="#" onclick="switchModal('registerModal', 'loginModal')">立即登录</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 提示消息 -->
+    <div class="toast" id="toast"></div>
+
+    <script src="script.js"></script>
+    <script src="categories.js"></script>
+</body>
+</html>

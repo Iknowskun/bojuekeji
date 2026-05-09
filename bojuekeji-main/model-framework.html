@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模型构建 - 材料基础工程数据库</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .model-framework-page {
+            padding: 40px 0 80px;
+            background: var(--bg-secondary);
+        }
+
+        .framework-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .framework-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+        }
+
+        .framework-header p {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .algorithm-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .algorithm-card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .algorithm-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-4px);
+            border-color: var(--primary-color);
+        }
+
+        .algorithm-card .card-icon {
+            width: 180px;
+            height: 120px;
+            flex-shrink: 0;
+        }
+
+        .algorithm-card .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-align: center;
+        }
+
+        .algorithm-card .card-description {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        /* 模态框样式 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-xl);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-body h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 20px 0 12px;
+        }
+
+        .modal-body h3:first-child {
+            margin-top: 0;
+        }
+
+        .modal-body p {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: 12px;
+        }
+
+        .modal-body ul {
+            margin: 12px 0;
+            padding-left: 24px;
+        }
+
+        .modal-body li {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: 8px;
+        }
+
+        .modal-body strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* 响应式适配 */
+        @media (max-width: 1400px) {
+            .algorithm-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .algorithm-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .algorithm-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .framework-header h1 {
+                font-size: 1.75rem;
+            }
+
+            .modal-content {
+                max-height: 90vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <div class="logo-icon">
+                    <img src="d5931adfe245e8e50dcbc61d9d072e36.png" alt="Logo" class="logo-image">
+                </div>
+                <span class="brand-text">材料基础工程数据库</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html">首页</a></li>
+                <li><a href="categories.html">材料分类</a></li>
+                <li><a href="statistics.html">数据查询</a></li>
+                <li><a href="calculation-engine.html">高通量第一性原理计算引擎</a></li>
+                <li><a href="model-data-package.html">高通量模型数据包</a></li>
+                <li><a href="material-design-tool.html">材料设计工具</a></li>
+                <li><a href="model-framework.html" class="active">模型构建</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button class="btn-login">登录</button>
+                <button class="btn-register">注册</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="model-framework-page">
+        <div class="container">
+            <!-- 页面标题 -->
+            <div class="framework-header">
+                <h1>机器学习算法模型</h1>
+                <p>整合多种先进的机器学习算法，为材料性能预测与设计提供强大的技术支撑</p>
+            </div>
+
+            <!-- 算法卡片网格 -->
+            <div class="algorithm-grid">
+                <!-- K近邻算法(KNN) -->
+                <div class="algorithm-card" onclick="openAlgorithmModal('knn')">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="40" cy="30" r="25" fill="#dbeafe" stroke="#93c5fd" stroke-width="1"/>
+                            <circle cx="50" cy="40" r="25" fill="#fecaca" stroke="#f87171" stroke-width="1"/>
+                            <circle cx="150" cy="30" r="25" fill="#dcfce7" stroke="#86efac" stroke-width="1"/>
+                            <circle cx="60" cy="60" r="4" fill="#000"/>
+                            <line x1="60" y1="60" x2="45" y2="35" stroke="#000" stroke-width="1"/>
+                            <line x1="60" y1="60" x2="55" y2="45" stroke="#000" stroke-width="1"/>
+                            <line x1="60" y1="60" x2="155" y2="35" stroke="#000" stroke-width="1"/>
+                            <line x1="0" y1="110" x2="200" y2="110" stroke="#999" stroke-width="1"/>
+                            <line x1="10" y1="10" x2="10" y2="110" stroke="#999" stroke-width="1"/>
+                        </svg>
+                    </div>
+                    <div class="card-title">K近邻算法(KNN)</div>
+                    <div class="card-description">基于距离度量的分类与回归算法</div>
+                </div>
+
+                <!-- 线性回归算法(LR) -->
+                <div class="algorithm-card" onclick="openAlgorithmModal('lr')">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+                            <polyline points="10,100 40,20 70,100 100,20 130,100 160,20 190,100" fill="none" stroke="#22c55e" stroke-width="2"/>
+                            <polyline points="10,100 40,30 70,90 100,30 130,90 160,30 190,90" fill="none" stroke="#f59e0b" stroke-width="2"/>
+                            <line x1="10" y1="60" x2="190" y2="60" stroke="#ef4444" stroke-width="2"/>
+                            <circle cx="20" cy="95" r="2" fill="#3b82f6"/>
+                            <circle cx="40" cy="25" r="2" fill="#3b82f6"/>
+                            <circle cx="60" cy="95" r="2" fill="#3b82f6"/>
+                            <circle cx="80" cy="25" r="2" fill="#3b82f6"/>
+                            <circle cx="100" cy="95" r="2" fill="#3b82f6"/>
+                            <circle cx="120" cy="25" r="2" fill="#3b82f6"/>
+                            <circle cx="140" cy="95" r="2" fill="#3b82f6"/>
+                            <circle cx="160" cy="25" r="2" fill="#3b82f6"/>
+                            <circle cx="180" cy="95" r="2" fill="#3b82f6"/>
+                        </svg>
+                    </div>
+                    <div class="card-title">线性回归算法(LR)</div>
+                    <div class="card-description">建立变量间线性关系的预测模型</div>
+                </div>
+
+                <!-- 岭回归算法(RLR) -->
+                <div class="algorithm-card" onclick="openAlgorithmModal('rlr')">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="100" cy="60" r="40" fill="none" stroke="#93c5fd" stroke-width="1"/>
+                            <circle cx="100" cy="60" r="30" fill="none" stroke="#93c5fd" stroke-width="1"/>
+                            <circle cx="100" cy="60" r="20" fill="none" stroke="#93c5fd" stroke-width="1"/>
+                            <circle cx="100" cy="60" r="4" fill="#ef4444"/>
+                            <line x1="100" y1="60" x2="140" y2="60" stroke="#93c5fd" stroke-width="2"/>
+                            <line x1="100" y1="60" x2="100" y2="20" stroke="#93c5fd" stroke-width="2"/>
+                            <circle cx="30" cy="90" r="10" fill="#3b82f6"/>
+                            <line x1="30" y1="90" x2="80" y2="60" stroke="#3b82f6" stroke-width="2"/>
+                            <text x="110" y="20" font-size="10" fill="#374151">最小二乘解</text>
+                            <text x="110" y="35" font-size="8" fill="#374151">抛物面等高线投影</text>
+                            <text x="110" y="45" font-size="8" fill="#374151">(同心椭圆)</text>
+                            <text x="50" y="100" font-size="10" fill="#374151">岭回归解</text>
+                            <text x="145" y="65" font-size="10" fill="#374151">β1</text>
+                            <text x="95" y="15" font-size="10" fill="#374151">β2</text>
+                        </svg>
+                    </div>
+                    <div class="card-title">岭回归算法(RLR)</div>
+                    <div class="card-description">改进的线性回归，解决多重共线性问题</div>
+                </div>
+
+                <!-- 决策树算法(DT) -->
+                <div class="algorithm-card" onclick="openAlgorithmModal('dt')">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="100" cy="20" r="10" fill="#f59e0b"/>
+                            <line x1="100" y1="30" x2="70" y2="50" stroke="#374151" stroke-width="1"/>
+                            <line x1="100" y1="30" x2="130" y2="50" stroke="#374151" stroke-width="1"/>
+                            <circle cx="70" cy="50" r="10" fill="#ef4444"/>
+                            <circle cx="130" cy="50" r="10" fill="#86efac"/>
+                            <line x1="70" y1="60" x2="50" y2="80" stroke="#374151" stroke-width="1"/>
+                            <line x1="70" y1="60" x2="90" y2="80" stroke="#374151" stroke-width="1"/>
+                            <line x1="130" y1="60" x2="110" y2="80" stroke="#374151" stroke-width="1"/>
+                            <line x1="130" y1="60" x2="150" y2="80" stroke="#374151" stroke-width="1"/>
+                            <circle cx="50" cy="80" r="8" fill="#22c55e"/>
+                            <circle cx="90" cy="80" r="8" fill="#ef4444"/>
+                            <circle cx="110" cy="80" r="8" fill="#86efac"/>
+                            <circle cx="150" cy="80" r="8" fill="#f87171"/>
+                            <text x="95" y="23" font-size="8" fill="#fff">Outlook</text>
+                            <text x="65" y="53" font-size="8" fill="#fff">Humidity</text>
+                            <text x="125" y="53" font-size="8" fill="#fff">Windy</text>
+                        </svg>
+                    </div>
+                    <div class="card-title">决策树算法(DT)</div>
+                    <div class="card-description">基于树形结构的分类与回归模型</div>
+                </div>
+
+                <!-- 随机森林算法(RF) -->
+                <div class="algorithm-card" onclick="openAlgorithmModal('rf')">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+                            <!-- 树1 -->
+                            <circle cx="30" cy="20" r="8" fill="#f59e0b"/>
+                            <line x1="30" y1="28" x2="20" y2="40" stroke="#374151"/>
+                            <line x1="30" y1="28" x2="40" y2="40" stroke="#374151"/>
+                            <circle cx="20" cy="40" r="6" fill="#ef4444"/>
+                            <circle cx="40" cy="40" r="6" fill="#86efac"/>
+                            <line x1="20" y1="46" x2="15" y2="60" stroke="#374151"/>
+                            <line x1="20" y1="46" x2="25" y2="60" stroke="#374151"/>
+                            <line x1="40" y1="46" x2="35" y2="60" stroke="#374151"/>
+                            <line x1="40" y1="46" x2="45" y2="60" stroke="#374151"/>
+                            <circle cx="15" cy="60" r="4" fill="#22c55e"/>
+                            <circle cx="25" cy="60" r="4" fill="#ef4444"/>
+                            <circle cx="35" cy="60" r="4" fill="#86efac"/>
+                            <circle cx="45" cy="60" r="4" fill="#f87171"/>
+                            <!-- 树2 -->
+                            <circle cx="100" cy="20" r="8" fill="#f59e0b"/>
+                            <line x1="100" y1="28" x2="90" y2="40" stroke="#374151"/>
+                            <line x1="100" y1="28" x2="110" y2="40" stroke="#374151"/>
+                            <circle cx="90" cy="40" r="6" fill="#ef4444"/>
+                            <circle cx="110" cy="40" r="6" fill="#86efac"/>
+                            <line x1="90" y1="46" x2="85" y2="60" stroke="#374151"/>
+                            <line x1="90" y1="46" x2="95" y2="60" stroke="#374151"/>
+                            <line x1="110" y1="46" x2="105" y2="60" stroke="#374151"/>
+                            <line x1="110" y1="46" x2="115" y2="60" stroke="#374151"/>
+                            <circle cx="85" cy="60" r="4" fill="#22c55e"/>
+                            <circle cx="95" cy="60" r="4" fill="#ef4444"/>
+                            <circle cx="105" cy="60" r="4" fill="#86efac"/>
+                            <circle cx="115" cy="60" r="4" fill="#f87171"/>
+                            <!-- 树3 -->
+                            <circle cx="170" cy="20" r="8" fill="#f59e0b"/>
+                            <line x1="170" y1="28" x2="160" y2="40" stroke="#374151"/>
+                            <line x1="170" y1="28" x2="180" y2="40" stroke="#374151"/>
+                            <circle cx="160" cy="40" r="6" fill="#ef4444"/>
+                            <circle cx="180" cy="40" r="6" fill="#86efac"/>
+                            <line x1="160" y1="46" x2="155" y2="60" stroke="#374151"/>
+                            <line x1="160" y1="46" x2="165" y2="60" stroke="#374151"/>
+                            <line x1="180" y1="46" x2="175" y2="60" stroke="#374151"/>
+                            <line x1="180" y1="46" x2="185" y2="60" stroke="#374151"/>
+                            <circle cx="155" cy="60" r="4" fill="#22c55e"/>
+                            <circle cx="165" cy="60" r="4" fill="#ef4444"/>
+                            <circle cx="175" cy="60" r="4" fill="#86efac"/>
+                            <circle cx="185" cy="60" r="4" fill="#f87171"/>
+                            <!-- 汇总 -->
+                            <circle cx="100" cy="80" r="8" fill="#3b82f6"/>
+                            <line x1="30" y1="65" x2="100" y2="80" stroke="#374151" stroke-width="1"/>
+                            <line x1="100" y1="65" x2="100" y2="80" stroke="#374151" stroke-width="1"/>
+                            <line x1="170" y1="65" x2="100" y2="80" stroke="#374151" stroke-width="1"/>
+                            <line x1="100" y1="88" x2="80" y2="100" stroke="#374151" stroke-width="1"/>
+                            <line x1="100" y1="88" x2="120" y2="100" stroke="#374151" stroke-width="1"/>
+                            <circle cx="80" cy="100" r="6" fill="#22c55e"/>
+                            <circle cx="120" cy="100" r="6" fill="#f87171"/>
+                        </svg>
+                    </div>
+                    <div class="card-title">随机森林算法(RF)</div>
+                    <div class="card-description">集成多棵决策树提升预测准确性</div>
+                </div>
+
+                <!-- 梯度提升回归树算法(GBRT) -->
+                <div class="algorithm-card" onclick="openAlgorithmModal('gbrt')">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="10" y="20" width="40" height="30" fill="#dbeafe" stroke="#93c5fd"/>
+                            <rect x="60" y="20" width="40" height="30" fill="#dbeafe" stroke="#93c5fd"/>
+                            <text x="15" y="35" font-size="8">f₁(x)</text>
+                            <text x="65" y="35" font-size="8">f₂(x)</text>
+                            <line x1="55" y1="35" x2="60" y2="35" stroke="#374151" stroke-width="2" marker-end="url(#arrow)"/>
+                            <rect x="10" y="60" width="40" height="30" fill="#dbeafe" stroke="#93c5fd"/>
+                            <rect x="60" y="60" width="40" height="30" fill="#dbeafe" stroke="#93c5fd"/>
+                            <rect x="110" y="60" width="40" height="30" fill="#dbeafe" stroke="#93c5fd"/>
+                            <text x="15" y="75" font-size="8">f₁(x₁)</text>
+                            <text x="65" y="75" font-size="8">f₁(x₂)</text>
+                            <text x="115" y="75" font-size="8">f₁(x₃)</text>
+                            <line x1="55" y1="75" x2="60" y2="75" stroke="#374151" stroke-width="2" marker-end="url(#arrow)"/>
+                            <line x1="105" y1="75" x2="110" y2="75" stroke="#374151" stroke-width="2" marker-end="url(#arrow)"/>
+                            <line x1="30" y1="50" x2="30" y2="60" stroke="#374151" stroke-width="2" marker-end="url(#arrow)"/>
+                            <line x1="80" y1="50" x2="80" y2="60" stroke="#374151" stroke-width="2" marker-end="url(#arrow)"/>
+                            <text x="150" y="35" font-size="10">...</text>
+                            <text x="150" y="75" font-size="10">...</text>
+                            <line x1="145" y1="35" x2="150" y2="35" stroke="#374151" stroke-width="2" marker-end="url(#arrow)"/>
+                            <line x1="145" y1="75" x2="150" y2="75" stroke="#374151" stroke-width="2" marker-end="url(#arrow)"/>
+                            <defs>
+                                <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#374151"/>
+                                </marker>
+                            </defs>
+                        </svg>
+                    </div>
+                    <div class="card-title">梯度提升回归树算法(GBRT)</div>
+                    <div class="card-description">迭代优化弱学习器构建强预测模型</div>
+                </div>
+
+                <!-- XGboost算法(XGboost) -->
+                <div class="algorithm-card" onclick="openAlgorithmModal('xgboost')">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="10" y="20" width="30" height="20" fill="#dbeafe" stroke="#93c5fd"/>
+                            <rect x="50" y="20" width="30" height="20" fill="#dbeafe" stroke="#93c5fd"/>
+                            <rect x="90" y="20" width="30" height="20" fill="#dbeafe" stroke="#93c5fd"/>
+                            <rect x="130" y="20" width="30" height="20" fill="#dbeafe" stroke="#93c5fd"/>
+                            <line x1="40" y1="30" x2="50" y2="30" stroke="#374151" stroke-width="2" marker-end="url(#arrow2)"/>
+                            <line x1="80" y1="30" x2="90" y2="30" stroke="#374151" stroke-width="2" marker-end="url(#arrow2)"/>
+                            <line x1="120" y1="30" x2="130" y2="30" stroke="#374151" stroke-width="2" marker-end="url(#arrow2)"/>
+                            <rect x="10" y="50" width="30" height="20" fill="#fef3c7" stroke="#f59e0b"/>
+                            <rect x="50" y="50" width="30" height="20" fill="#fef3c7" stroke="#f59e0b"/>
+                            <rect x="90" y="50" width="30" height="20" fill="#fef3c7" stroke="#f59e0b"/>
+                            <rect x="130" y="50" width="30" height="20" fill="#fef3c7" stroke="#f59e0b"/>
+                            <line x1="25" y1="40" x2="25" y2="50" stroke="#374151" stroke-width="2" marker-end="url(#arrow2)"/>
+                            <line x1="65" y1="40" x2="65" y2="50" stroke="#374151" stroke-width="2" marker-end="url(#arrow2)"/>
+                            <line x1="105" y1="40" x2="105" y2="50" stroke="#374151" stroke-width="2" marker-end="url(#arrow2)"/>
+                            <line x1="145" y1="40" x2="145" y2="50" stroke="#374151" stroke-width="2" marker-end="url(#arrow2)"/>
+                            <rect x="10" y="80" width="150" height="15" fill="#fbbf24" stroke="#f59e0b"/>
+                            <line x1="25" y1="70" x2="25" y2="80" stroke="#374151" stroke-width="2" marker-end="url(#arrow2)"/>
+                            <line x1="65" y1="70" x2="65" y2="80" stroke="#374151" stroke-width="2" marker-end="url(#arrow2)"/>
+                            <line x1="105" y1="70" x2="105" y2="80" stroke="#374151" stroke-width="2" marker-end="url(#arrow2)"/>
+                            <line x1="145" y1="70" x2="145" y2="80" stroke="#374151" stroke-width="2" marker-end="url(#arrow2)"/>
+                            <defs>
+                                <marker id="arrow2" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#374151"/>
+                                </marker>
+                            </defs>
+                        </svg>
+                    </div>
+                    <div class="card-title">XGboost算法(XGboost)</div>
+                    <div class="card-description">高效的梯度提升决策树算法</div>
+                </div>
+
+                <!-- 支持向量机回归算法(SVR) -->
+                <div class="algorithm-card" onclick="openAlgorithmModal('svr')">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+                            <line x1="20" y1="100" x2="180" y2="100" stroke="#999" stroke-width="1"/>
+                            <line x1="20" y1="20" x2="20" y2="100" stroke="#999" stroke-width="1"/>
+                            <line x1="40" y1="30" x2="160" y2="90" stroke="#ef4444" stroke-width="2"/>
+                            <line x1="40" y1="40" x2="160" y2="80" stroke="#ef4444" stroke-width="1" stroke-dasharray="3 3"/>
+                            <line x1="40" y1="20" x2="160" y2="100" stroke="#ef4444" stroke-width="1" stroke-dasharray="3 3"/>
+                            <circle cx="50" cy="40" r="3" fill="#3b82f6"/>
+                            <circle cx="55" cy="45" r="3" fill="#3b82f6"/>
+                            <circle cx="60" cy="35" r="3" fill="#3b82f6"/>
+                            <circle cx="65" cy="50" r="3" fill="#3b82f6"/>
+                            <circle cx="70" cy="42" r="3" fill="#3b82f6"/>
+                            <circle cx="75" cy="38" r="3" fill="#3b82f6"/>
+                            <circle cx="130" cy="70" r="3" fill="#ef4444"/>
+                            <circle cx="135" cy="75" r="3" fill="#ef4444"/>
+                            <circle cx="140" cy="68" r="3" fill="#ef4444"/>
+                            <circle cx="145" cy="72" r="3" fill="#ef4444"/>
+                            <circle cx="150" cy="65" r="3" fill="#ef4444"/>
+                            <circle cx="155" cy="73" r="3" fill="#ef4444"/>
+                            <text x="45" y="110" font-size="10" fill="#374151">Normal patients</text>
+                            <text x="130" y="110" font-size="10" fill="#374151">Cancer patients</text>
+                        </svg>
+                    </div>
+                    <div class="card-title">支持向量机回归算法(SVR)</div>
+                    <div class="card-description">基于支持向量的回归预测模型</div>
+                </div>
+
+                <!-- 人工神经网络算法(ANN) -->
+                <div class="algorithm-card" onclick="openAlgorithmModal('ann')">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+                            <!-- 输入层 -->
+                            <circle cx="20" cy="20" r="5" fill="#3b82f6"/>
+                            <circle cx="20" cy="35" r="5" fill="#3b82f6"/>
+                            <circle cx="20" cy="50" r="5" fill="#3b82f6"/>
+                            <circle cx="20" cy="65" r="5" fill="#3b82f6"/>
+                            <circle cx="20" cy="80" r="5" fill="#3b82f6"/>
+                            <circle cx="20" cy="95" r="5" fill="#3b82f6"/>
+                            <!-- 隐藏层1 -->
+                            <circle cx="60" cy="20" r="5" fill="#86efac"/>
+                            <circle cx="60" cy="35" r="5" fill="#86efac"/>
+                            <circle cx="60" cy="50" r="5" fill="#86efac"/>
+                            <circle cx="60" cy="65" r="5" fill="#86efac"/>
+                            <circle cx="60" cy="80" r="5" fill="#86efac"/>
+                            <circle cx="60" cy="95" r="5" fill="#86efac"/>
+                            <!-- 隐藏层2 -->
+                            <circle cx="100" cy="35" r="5" fill="#86efac"/>
+                            <circle cx="100" cy="50" r="5" fill="#86efac"/>
+                            <circle cx="100" cy="65" r="5" fill="#86efac"/>
+                            <circle cx="100" cy="80" r="5" fill="#86efac"/>
+                            <!-- 输出层 -->
+                            <circle cx="140" cy="50" r="5" fill="#f59e0b"/>
+                            <circle cx="140" cy="65" r="5" fill="#f59e0b"/>
+                            <circle cx="180" cy="58" r="5" fill="#ef4444"/>
+                            <!-- 连接线 -->
+                            <line x1="25" y1="20" x2="55" y2="20" stroke="#999" stroke-width="1"/>
+                            <line x1="25" y1="20" x2="55" y2="35" stroke="#999" stroke-width="1"/>
+                            <line x1="25" y1="20" x2="55" y2="50" stroke="#999" stroke-width="1"/>
+                            <line x1="25" y1="20" x2="55" y2="65" stroke="#999" stroke-width="1"/>
+                            <line x1="25" y1="20" x2="55" y2="80" stroke="#999" stroke-width="1"/>
+                            <line x1="25" y1="20" x2="55" y2="95" stroke="#999" stroke-width="1"/>
+                            <line x1="25" y1="35" x2="55" y2="20" stroke="#999" stroke-width="1"/>
+                            <line x1="25" y1="35" x2="55" y2="35" stroke="#999" stroke-width="1"/>
+                            <line x1="25" y1="35" x2="55" y2="50" stroke="#999" stroke-width="1"/>
+                            <line x1="25" y1="35" x2="55" y2="65" stroke="#999" stroke-width="1"/>
+                            <line x1="25" y1="35" x2="55" y2="80" stroke="#999" stroke-width="1"/>
+                            <line x1="25" y1="35" x2="55" y2="95" stroke="#999" stroke-width="1"/>
+                            <line x1="25" y1="50" x2="55" y2="20" stroke="#999" stroke-width="1"/>
+                            <line x1="25" y1="50" x2="55" y2="35" stroke="#999" stroke-width="1"/>
+                            <line x1="25" y1="50" x2="55" y2="50" stroke="#999" stroke-width="1"/>
+                            <line x1="25" y1="50" x2="55" y2="65" stroke="#999" stroke-width="1"/>
+                            <line x1="25" y1="50" x2="55" y2="80" stroke="#999" stroke-width="1"/>
+                            <line x1="25" y1="50" x2="55" y2="95" stroke="#999" stroke-width="1"/>
+                            <line x1="25" y1="65" x2="55" y2="20" stroke="#999" stroke-width="1"/>
+                            <line x1="25" y1="65" x2="55" y2="35" stroke="#999" stroke-width="1"/>
+                            <line x1="25" y1="65" x2="55" y2="50" stroke="#999" stroke-width="1"/>
+                            <line x1="25" y1="65" x2="55" y2="65" stroke="#999" stroke-width="1"/>
+                            <line x1="25" y1="65" x2="55" y2="80" stroke="#999" stroke-width="1"/>
+                            <line x1="25" y1="65" x2="55" y2="95" stroke="#999" stroke-width="1"/>
+                            <line x1="25" y1="80" x2="55" y2="20" stroke="#999" stroke-width="1"/>
+                            <line x1="25" y1="80" x2="55" y2="35" stroke="#999" stroke-width="1"/>
+                            <line x1="25" y1="80" x2="55" y2="50" stroke="#999" stroke-width="1"/>
+                            <line x1="25" y1="80" x2="55" y2="65" stroke="#999" stroke-width="1"/>
+                            <line x1="25" y1="80" x2="55" y2="80" stroke="#999" stroke-width="1"/>
+                            <line x1="25" y1="80" x2="55" y2="95" stroke="#999" stroke-width="1"/>
+                            <line x1="25" y1="95" x2="55" y2="20" stroke="#999" stroke-width="1"/>
+                            <line x1="25" y1="95" x2="55" y2="35" stroke="#999" stroke-width="1"/>
+                            <line x1="25" y1="95" x2="55" y2="50" stroke="#999" stroke-width="1"/>
+                            <line x1="25" y1="95" x2="55" y2="65" stroke="#999" stroke-width="1"/>
+                            <line x1="25" y1="95" x2="55" y2="80" stroke="#999" stroke-width="1"/>
+                            <line x1="25" y1="95" x2="55" y2="95" stroke="#999" stroke-width="1"/>
+                            <line x1="65" y1="20" x2="95" y2="35" stroke="#999" stroke-width="1"/>
+                            <line x1="65" y1="20" x2="95" y2="50" stroke="#999" stroke-width="1"/>
+                            <line x1="65" y1="20" x2="95" y2="65" stroke="#999" stroke-width="1"/>
+                            <line x1="65" y1="20" x2="95" y2="80" stroke="#999" stroke-width="1"/>
+                            <line x1="65" y1="35" x2="95" y2="35" stroke="#999" stroke-width="1"/>
+                            <line x1="65" y1="35" x2="95" y2="50" stroke="#999" stroke-width="1"/>
+                            <line x1="65" y1="35" x2="95" y2="65" stroke="#999" stroke-width="1"/>
+                            <line x1="65" y1="35" x2="95" y2="80" stroke="#999" stroke-width="1"/>
+                            <line x1="65" y1="50" x2="95" y2="35" stroke="#999" stroke-width="1"/>
+                            <line x1="65" y1="50" x2="95" y2="50" stroke="#999" stroke-width="1"/>
+                            <line x1="65" y1="50" x2="95" y2="65" stroke="#999" stroke-width="1"/>
+                            <line x1="65" y1="50" x2="95" y2="80" stroke="#999" stroke-width="1"/>
+                            <line x1="65" y1="65" x2="95" y2="35" stroke="#999" stroke-width="1"/>
+                            <line x1="65" y1="65" x2="95" y2="50" stroke="#999" stroke-width="1"/>
+                            <line x1="65" y1="65" x2="95" y2="65" stroke="#999" stroke-width="1"/>
+                            <line x1="65" y1="65" x2="95" y2="80" stroke="#999" stroke-width="1"/>
+                            <line x1="65" y1="80" x2="95" y2="35" stroke="#999" stroke-width="1"/>
+                            <line x1="65" y1="80" x2="95" y2="50" stroke="#999" stroke-width="1"/>
+                            <line x1="65" y1="80" x2="95" y2="65" stroke="#999" stroke-width="1"/>
+                            <line x1="65" y1="80" x2="95" y2="80" stroke="#999" stroke-width="1"/>
+                            <line x1="65" y1="95" x2="95" y2="35" stroke="#999" stroke-width="1"/>
+                            <line x1="65" y1="95" x2="95" y2="50" stroke="#999" stroke-width="1"/>
+                            <line x1="65" y1="95" x2="95" y2="65" stroke="#999" stroke-width="1"/>
+                            <line x1="65" y1="95" x2="95" y2="80" stroke="#999" stroke-width="1"/>
+                            <line x1="105" y1="35" x2="135" y2="50" stroke="#999" stroke-width="1"/>
+                            <line x1="105" y1="35" x2="135" y2="65" stroke="#999" stroke-width="1"/>
+                            <line x1="105" y1="50" x2="135" y2="50" stroke="#999" stroke-width="1"/>
+                            <line x1="105" y1="50" x2="135" y2="65" stroke="#999" stroke-width="1"/>
+                            <line x1="105" y1="65" x2="135" y2="50" stroke="#999" stroke-width="1"/>
+                            <line x1="105" y1="65" x2="135" y2="65" stroke="#999" stroke-width="1"/>
+                            <line x1="105" y1="80" x2="135" y2="50" stroke="#999" stroke-width="1"/>
+                            <line x1="105" y1="80" x2="135" y2="65" stroke="#999" stroke-width="1"/>
+                            <line x1="145" y1="50" x2="175" y2="58" stroke="#999" stroke-width="1"/>
+                            <line x1="145" y1="65" x2="175" y2="58" stroke="#999" stroke-width="1"/>
+                            <text x="10" y="15" font-size="8">输入层</text>
+                            <text x="50" y="15" font-size="8">隐藏层</text>
+                            <text x="90" y="15" font-size="8">隐藏层</text>
+                            <text x="130" y="15" font-size="8">输出层</text>
+                            <text x="8" y="110" font-size="6">6, 6, 4个神经元</text>
+                        </svg>
+                    </div>
+                    <div class="card-title">人工神经网络算法(ANN)</div>
+                    <div class="card-description">模拟人脑神经网络的深度学习模型</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2024 材料基础工程数据库. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 模态框 -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">算法详情</h2>
+                <button type="button" class="modal-close" onclick="closeAlgorithmModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- 动态内容 -->
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // 算法详细描述数据
+        const algorithmDetails = {
+            knn: {
+                title: 'K近邻算法 (KNN)',
+                content: `
+                    <h3>算法简介</h3>
+                    <p>K近邻算法（K-Nearest Neighbors，KNN）是一种基于实例的学习方法，也是最简单的机器学习算法之一。它的核心思想是：给定一个测试样本，基于某种距离度量找出训练集中与其最靠近的K个样本，然后基于这K个"邻居"的信息来进行预测。</p>
+                    
+                    <h3>工作原理</h3>
+                    <ul>
+                        <li><strong>距离计算：</strong>计算测试样本与所有训练样本之间的距离，常用欧氏距离、曼哈顿距离等</li>
+                        <li><strong>邻居选择：</strong>选择距离最近的K个样本作为邻居</li>
+                        <li><strong>决策规则：</strong>分类问题采用多数投票，回归问题采用平均值</li>
+                    </ul>
+                    
+                    <h3>在材料科学中的应用</h3>
+                    <p>KNN算法在材料性能预测、材料分类、相图识别等领域有广泛应用。例如，根据材料的化学成分和微观结构特征，预测其力学性能或热学性能。</p>
+                    
+                    <h3>优缺点</h3>
+                    <ul>
+                        <li><strong>优点：</strong>简单直观，无需训练过程，适合多分类问题</li>
+                        <li><strong>缺点：</strong>计算复杂度高，对异常值敏感，需要选择合适的K值</li>
+                    </ul>
+                `
+            },
+            lr: {
+                title: '线性回归算法 (LR)',
+                content: `
+                    <h3>算法简介</h3>
+                    <p>线性回归（Linear Regression，LR）是一种用于建立自变量与因变量之间线性关系的统计学习方法。它通过最小化预测值与真实值之间的误差平方和，找到最佳拟合直线或超平面。</p>
+                    
+                    <h3>工作原理</h3>
+                    <ul>
+                        <li><strong>模型假设：</strong>假设因变量与自变量之间存在线性关系</li>
+                        <li><strong>参数估计：</strong>使用最小二乘法估计模型参数</li>
+                        <li><strong>预测输出：</strong>通过线性组合自变量得到预测结果</li>
+                    </ul>
+                    
+                    <h3>在材料科学中的应用</h3>
+                    <p>线性回归常用于建立材料成分与性能之间的定量关系模型，如合金元素含量对硬度、强度等性能的影响预测。也可用于分析材料制备工艺参数与最终性能之间的关系。</p>
+                    
+                    <h3>优缺点</h3>
+                    <ul>
+                        <li><strong>优点：</strong>计算简单，可解释性强，适合线性关系明显的数据</li>
+                        <li><strong>缺点：</strong>只能捕捉线性关系，对非线性数据拟合效果差</li>
+                    </ul>
+                `
+            },
+            rlr: {
+                title: '岭回归算法 (RLR)',
+                content: `
+                    <h3>算法简介</h3>
+                    <p>岭回归（Ridge Regression，RLR）是一种改进的线性回归方法，通过在损失函数中添加L2正则化项来解决多重共线性问题。当自变量之间存在高度相关性时，普通最小二乘法的估计值会变得不稳定，岭回归通过引入偏置来换取更稳定的估计。</p>
+                    
+                    <h3>工作原理</h3>
+                    <ul>
+                        <li><strong>L2正则化：</strong>在损失函数中加入参数的平方和作为惩罚项</li>
+                        <li><strong>岭参数：</strong>通过调整岭参数λ控制正则化强度</li>
+                        <li><strong>参数收缩：</strong>将相关变量的系数向零收缩，但不完全为零</li>
+                    </ul>
+                    
+                    <h3>在材料科学中的应用</h3>
+                    <p>在材料成分设计中，多个合金元素之间往往存在相关性，岭回归可以有效处理这种多重共线性问题，建立更稳定的成分-性能预测模型。</p>
+                    
+                    <h3>优缺点</h3>
+                    <ul>
+                        <li><strong>优点：</strong>解决多重共线性，提高模型稳定性，防止过拟合</li>
+                        <li><strong>缺点：</strong>需要选择合适的岭参数，无法进行特征选择</li>
+                    </ul>
+                `
+            },
+            dt: {
+                title: '决策树算法 (DT)',
+                content: `
+                    <h3>算法简介</h3>
+                    <p>决策树（Decision Tree，DT）是一种基于树形结构的监督学习算法，通过一系列的判断规则将数据逐步划分到不同的类别或预测值。决策树直观易懂，能够处理数值型和分类型数据。</p>
+                    
+                    <h3>工作原理</h3>
+                    <ul>
+                        <li><strong>特征选择：</strong>选择最优特征和切分点进行节点分裂</li>
+                        <li><strong>树构建：</strong>递归地构建决策树，直到满足停止条件</li>
+                        <li><strong>剪枝处理：</strong>通过剪枝防止过拟合，提高泛化能力</li>
+                    </ul>
+                    
+                    <h3>在材料科学中的应用</h3>
+                    <p>决策树可用于材料分类（如判断材料类型）、相图预测、材料设计决策等。例如，根据材料的成分和工艺参数，预测其相结构或性能等级。</p>
+                    
+                    <h3>优缺点</h3>
+                    <ul>
+                        <li><strong>优点：</strong>直观易懂，可解释性强，无需数据预处理</li>
+                        <li><strong>缺点：</strong>容易过拟合，对数据变化敏感，单棵树预测能力有限</li>
+                    </ul>
+                `
+            },
+            rf: {
+                title: '随机森林算法 (RF)',
+                content: `
+                    <h3>算法简介</h3>
+                    <p>随机森林（Random Forest，RF）是一种集成学习方法，通过构建多棵决策树并综合它们的预测结果来提高模型的准确性和稳定性。它结合了Bagging思想和随机特征选择，有效降低了单棵决策树的过拟合风险。</p>
+                    
+                    <h3>工作原理</h3>
+                    <ul>
+                        <li><strong>Bootstrap采样：</strong>对训练数据进行有放回随机采样</li>
+                        <li><strong>随机特征：</strong>在每个节点分裂时随机选择部分特征</li>
+                        <li><strong>集成预测：</strong>分类采用多数投票，回归采用平均值</li>
+                    </ul>
+                    
+                    <h3>在材料科学中的应用</h3>
+                    <p>随机森林在材料性能预测、材料分类、特征重要性分析等方面表现优异。例如，预测合金的力学性能、识别材料的关键影响因素等。</p>
+                    
+                    <h3>优缺点</h3>
+                    <ul>
+                        <li><strong>优点：</strong>准确率高，抗过拟合能力强，可评估特征重要性</li>
+                        <li><strong>缺点：</strong>模型复杂，训练时间较长，可解释性相对较弱</li>
+                    </ul>
+                `
+            },
+            gbrt: {
+                title: '梯度提升回归树算法 (GBRT)',
+                content: `
+                    <h3>算法简介</h3>
+                    <p>梯度提升回归树（Gradient Boosting Regression Tree，GBRT）是一种基于梯度提升框架的集成学习方法。它通过迭代地训练一系列弱学习器（通常是决策树），每棵新树都致力于纠正前一棵树的预测误差，最终将所有树的预测结果加权组合。</p>
+                    
+                    <h3>工作原理</h3>
+                    <ul>
+                        <li><strong>梯度下降：</strong>使用梯度下降方向指导新树的学习</li>
+                        <li><strong>残差拟合：</strong>每棵树拟合前一轮预测的残差</li>
+                        <li><strong>加权组合：</strong>通过学习率控制每棵树的贡献</li>
+                    </ul>
+                    
+                    <h3>在材料科学中的应用</h3>
+                    <p>GBRT在材料性能预测、材料优化设计等领域有广泛应用，特别适合处理复杂的非线性关系。例如，预测材料的疲劳寿命、优化合金成分配比等。</p>
+                    
+                    <h3>优缺点</h3>
+                    <ul>
+                        <li><strong>优点：</strong>预测精度高，能处理非线性关系，对异常值鲁棒</li>
+                        <li><strong>缺点：</strong>训练时间较长，参数调优复杂，容易过拟合</li>
+                    </ul>
+                `
+            },
+            xgboost: {
+                title: 'XGboost算法',
+                content: `
+                    <h3>算法简介</h3>
+                    <p>XGBoost（eXtreme Gradient Boosting）是一种高效的梯度提升决策树算法，在众多机器学习竞赛中表现优异。它在传统GBDT的基础上进行了多项优化，包括正则化、并行计算、近似算法等，大幅提升了训练速度和预测性能。</p>
+                    
+                    <h3>工作原理</h3>
+                    <ul>
+                        <li><strong>二阶导数：</strong>利用泰勒展开的二阶导数信息优化目标函数</li>
+                        <li><strong>正则化：</strong>在目标函数中加入L1和L2正则化项</li>
+                        <li><strong>并行计算：</strong>支持特征粒度的并行训练</li>
+                    </ul>
+                    
+                    <h3>在材料科学中的应用</h3>
+                    <p>XGBoost在材料性能预测、材料发现、高通量筛选等领域应用广泛。例如，预测新材料的性能、筛选候选材料、优化材料制备工艺等。</p>
+                    
+                    <h3>优缺点</h3>
+                    <ul>
+                        <li><strong>优点：</strong>训练速度快，预测精度高，支持并行计算，可处理缺失值</li>
+                        <li><strong>缺点：</strong>参数较多调优复杂，对噪声数据敏感，内存占用较高</li>
+                    </ul>
+                `
+            },
+            svr: {
+                title: '支持向量机回归算法 (SVR)',
+                content: `
+                    <h3>算法简介</h3>
+                    <p>支持向量机回归（Support Vector Regression，SVR）是支持向量机（SVM）在回归问题上的应用。它通过寻找一个超平面，使得所有训练样本点到该超平面的距离不超过某个阈值ε，同时最大化超平面的间隔。</p>
+                    
+                    <h3>工作原理</h3>
+                    <ul>
+                        <li><strong>核函数：</strong>通过核技巧将数据映射到高维空间</li>
+                        <li><strong>ε-不敏感损失：</strong>只对误差超过ε的样本进行惩罚</li>
+                        <li><strong>支持向量：</strong>只有部分样本（支持向量）决定模型</li>
+                    </ul>
+                    
+                    <h3>在材料科学中的应用</h3>
+                    <p>SVR在材料性能预测、材料建模、相图预测等方面有良好表现。例如，预测材料的弹性模量、热导率等连续性能指标。</p>
+                    
+                    <h3>优缺点</h3>
+                    <ul>
+                        <li><strong>优点：</strong>泛化能力强，适合小样本数据，可处理非线性关系</li>
+                        <li><strong>缺点：</strong>对大规模数据训练效率低，核函数选择困难</li>
+                    </ul>
+                `
+            },
+            ann: {
+                title: '人工神经网络算法 (ANN)',
+                content: `
+                    <h3>算法简介</h3>
+                    <p>人工神经网络（Artificial Neural Network，ANN）是一种受生物神经系统启发的机器学习模型。它由大量相互连接的神经元（节点）组成，通过调整连接权重来学习数据中的复杂模式。深度神经网络（DNN）是ANN的一种，具有多个隐藏层。</p>
+                    
+                    <h3>工作原理</h3>
+                    <ul>
+                        <li><strong>前向传播：</strong>输入数据通过网络层传递，计算输出</li>
+                        <li><strong>反向传播：</strong>根据误差调整网络权重</li>
+                        <li><strong>激活函数：</strong>引入非线性，增强模型表达能力</li>
+                    </ul>
+                    
+                    <h3>在材料科学中的应用</h3>
+                    <p>ANN在材料性能预测、材料发现、微观结构分析等领域应用广泛。例如，预测材料的力学性能、热学性能，设计新型材料，分析材料的微观结构特征等。</p>
+                    
+                    <h3>优缺点</h3>
+                    <ul>
+                        <li><strong>优点：</strong>强大的非线性拟合能力，适合复杂数据，可端到端学习</li>
+                        <li><strong>缺点：</strong>需要大量数据，训练时间长，可解释性差，易过拟合</li>
+                    </ul>
+                `
+            }
+        };
+
+        // 打开模态框
+        function openAlgorithmModal(algorithmKey) {
+            const modal = document.getElementById('modalOverlay');
+            const title = document.getElementById('modalTitle');
+            const body = document.getElementById('modalBody');
+            
+            const data = algorithmDetails[algorithmKey];
+            if (data) {
+                title.textContent = data.title;
+                body.innerHTML = data.content;
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        // 关闭模态框
+        function closeAlgorithmModal() {
+            const modal = document.getElementById('modalOverlay');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // 点击遮罩层关闭
+        document.getElementById('modalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeAlgorithmModal();
+            }
+        });
+
+        // ESC键关闭
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeAlgorithmModal();
+            }
+        });
+    </script>
+</body>
+</html>
